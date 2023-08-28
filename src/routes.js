@@ -52,7 +52,7 @@ export const routes = [
                 database.update('tasks', id, updatedTask);
                 return res.writeHead(204).end();
             }
-            return res.writeHead(404).end("Registro não existe");
+            return res.writeHead(404).end("Registro Não Existe");
         }
     },
     {
@@ -64,15 +64,28 @@ export const routes = [
             if (success) {
                 return res.writeHead(204).end();
             }
-            return res.writeHead(404).end("Registro Não existe");
+            return res.writeHead(404).end("Registro Não Existe");
         }
     },
     {
         method: 'PATCH',
         path: buildRoutePath('/tasks/:id/complete'),
         handler: (req, res) => {
-            // Toggles complete/incomplete task
-            return res.end();
+            const { id } = req.params;
+
+            const selectedTask = database.select('tasks').filter(row => row.id === id)[0];
+            if (selectedTask) {
+                const updatedTask = {
+                    title: selectedTask.title,
+                    description: selectedTask.description,
+                    completed_at: selectedTask.completed_at ? null : Date(),
+                    created_at: selectedTask.created_at,
+                    updated_at: Date(),
+                }
+                database.update('tasks', id, updatedTask);
+                return res.writeHead(204).end();
+            }
+            return res.writeHead(404).end("Registro Não Existe");
         }
     }
 ]
