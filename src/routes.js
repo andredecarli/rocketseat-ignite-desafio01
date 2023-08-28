@@ -17,7 +17,6 @@ export const routes = [
         method: 'POST',
         path: buildRoutePath('/tasks'),
         handler: (req, res) => {
-            // Insert a Task in the Database
             const { title, description } = req.body;
 
             const task = {
@@ -38,7 +37,6 @@ export const routes = [
         method: 'PUT',
         path: buildRoutePath('/tasks/:id'),
         handler: (req, res) => {
-            // Updates a Task in the Database
             const { id } = req.params;
             const { title, description } = req.body;
 
@@ -61,8 +59,12 @@ export const routes = [
         method: 'DELETE',
         path: buildRoutePath('/tasks/:id'),
         handler: (req, res) => {
-            // Deletes a Task in the Database
-            return res.end();
+            const { id } = req.params;
+            const success = database.delete('tasks', id);
+            if (success) {
+                return res.writeHead(204).end();
+            }
+            return res.writeHead(404).end("Registro Não existe");
         }
     },
     {

@@ -52,7 +52,9 @@ export class Database {
         if(rowIndex > -1) {
             this.#database[table].splice(rowIndex, 1);
             this.#persist();
+            return true;
         }
+        return false;
     }
 
     patch(table, id) {
