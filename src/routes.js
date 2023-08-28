@@ -9,7 +9,11 @@ export const routes = [
         method: 'GET',
         path: buildRoutePath('/tasks'),
         handler: (req, res) => {
-            const tasks = database.select('tasks');
+            const { search } = req.query;
+            const tasks = database.select('tasks', search ? {
+                title: search,
+                description: search,
+            } : null);
             return res.end(JSON.stringify(tasks));
         }
     },
@@ -18,6 +22,22 @@ export const routes = [
         path: buildRoutePath('/tasks'),
         handler: (req, res) => {
             const { title, description } = req.body;
+
+            if (!title) {
+                return res
+                    .writeHead(400)
+                    .end(JSON.stringify(
+                        {message: "Titulo da Atividade é um campo necessário"}
+                    ));
+            }
+
+            if (!description) {
+                return res
+                    .writeHead(400)
+                    .end(JSON.stringify(
+                        {message: "Descrição da Atividade é um campo necessário"}
+                    ));
+            }
 
             const task = {
                 id: randomUUID(),
@@ -40,7 +60,15 @@ export const routes = [
             const { id } = req.params;
             const { title, description } = req.body;
 
-            const selectedTask = database.select('tasks').filter(row => row.id === id)[0];
+            if (!title && !description) {
+                return res
+                    .writeHead(400)
+                    .end(JSON.stringify(
+                        {message: "Titulo ou Descricao sao necessários"}
+                    ));
+            }
+
+            const [selectedTask] = database.select('tasks').filter(row => row.id === id);
             if (selectedTask) {
                 const updatedTask = {
                     title: title ?? selectedTask.title,
@@ -52,7 +80,9 @@ export const routes = [
                 database.update('tasks', id, updatedTask);
                 return res.writeHead(204).end();
             }
-            return res.writeHead(404).end("Registro Não Existe");
+            return res
+                .writeHead(404)
+                .end(JSON.stringify({message:"Registro Não Existe"}));
         }
     },
     {
@@ -64,7 +94,9 @@ export const routes = [
             if (success) {
                 return res.writeHead(204).end();
             }
-            return res.writeHead(404).end("Registro Não Existe");
+            return res
+                .writeHead(404)
+                .end(JSON.stringify({message: "Registro Não Existe"}));
         }
     },
     {
@@ -73,7 +105,7 @@ export const routes = [
         handler: (req, res) => {
             const { id } = req.params;
 
-            const selectedTask = database.select('tasks').filter(row => row.id === id)[0];
+            const [selectedTask] = database.select('tasks').filter(row => row.id === id);
             if (selectedTask) {
                 const updatedTask = {
                     title: selectedTask.title,
@@ -85,7 +117,9 @@ export const routes = [
                 database.update('tasks', id, updatedTask);
                 return res.writeHead(204).end();
             }
-            return res.writeHead(404).end("Registro Não Existe");
+            return res
+                .writeHead(404)
+                .end(JSON.stringify({message: "Registro Não Existe"}));
         }
     }
 ]
