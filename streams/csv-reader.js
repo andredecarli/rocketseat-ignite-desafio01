@@ -1,10 +1,6 @@
 import { parse } from 'csv-parse';
 import fs from 'node:fs';
 
-(async () => {
-    
-})();
-
 fs.createReadStream("./data.csv")
         .pipe(parse({delimiter: ',', from_line: 2}))
         .on("data", function(row) {
