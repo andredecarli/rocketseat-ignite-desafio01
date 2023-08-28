@@ -1,12 +1,13 @@
 import { Database } from "./database.js";
 import { randomUUID } from 'node:crypto';
+import { buildRoutePath } from "./utils/build-route-paths.js";
 
 const database = new Database();
 
 export const routes = [
     {
         method: 'GET',
-        path: '/tasks',
+        path: buildRoutePath('/tasks'),
         handler: (req, res) => {
             const tasks = database.select('tasks');
             return res.end(JSON.stringify(tasks));
@@ -14,7 +15,7 @@ export const routes = [
     },
     {
         method: 'POST',
-        path: '/tasks',
+        path: buildRoutePath('/tasks'),
         handler: (req, res) => {
             // Insert a Task in the Database
             const { title, description } = req.body;
@@ -35,15 +36,30 @@ export const routes = [
     },
     {
         method: 'PUT',
-        path: '/tasks/:id',
+        path: buildRoutePath('/tasks/:id'),
         handler: (req, res) => {
             // Updates a Task in the Database
-            return res.end();
+            const { id } = req.params;
+            const { title, description } = req.body;
+
+            const selectedTask = database.select('tasks').filter(row => row.id === id)[0];
+            if (selectedTask) {
+                const updatedTask = {
+                    title: title ?? selectedTask.title,
+                    description: description ?? selectedTask.description,
+                    completed_at: selectedTask.completed_at,
+                    created_at: selectedTask.created_at,
+                    updated_at: Date(),
+                }
+                database.update('tasks', id, updatedTask);
+                return res.writeHead(204).end();
+            }
+            return res.writeHead(404).end("Registro não existe");
         }
     },
     {
         method: 'DELETE',
-        path: '/tasks/:id',
+        path: buildRoutePath('/tasks/:id'),
         handler: (req, res) => {
             // Deletes a Task in the Database
             return res.end();
@@ -51,7 +67,7 @@ export const routes = [
     },
     {
         method: 'PATCH',
-        path: '/tasks/:id/complete',
+        path: buildRoutePath('/tasks/:id/complete'),
         handler: (req, res) => {
             // Toggles complete/incomplete task
             return res.end();
